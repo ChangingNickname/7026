@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Личное Дело — 7th SNP FEL 6914 Krans</title>
+  <style>
+    /* ===== Экран подтверждения ===== */
+    #overlay-confirm {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #201813 0%, #0b0704 60%, #000 100%);
+      color: #f5e9d0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: "Courier New", monospace;
+    }
+
+    #overlay-box {
+      border: 1px solid rgba(245,233,208,0.6);
+      padding: 22px 30px;
+      max-width: 480px;
+      text-align: center;
+      background: rgba(20,14,10,0.95);
+      box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    }
+
+    #overlay-title {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+
+    #overlay-text {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-bottom: 14px;
+      white-space: pre-line;
+    }
+
+    #overlay-hint {
+      font-size: 0.8rem;
+      opacity: 0.75;
+      letter-spacing: 0.12em;
+    }
+
+    /* ===== Общий фон страницы (стол) ===== */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Cormorant Garamond", "Times New Roman", serif;
+      background: radial-gradient(circle at top, #7b6b54 0%, #403628 50%, #221b14 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    body {
+      color: #2b2116;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+      z-index: 0;
+    }
+
+    /* ===== Папка / Личное дело ===== */
+    .folder {
+      position: relative;
+      z-index: 1;
+      width: 1000px;
+      max-width: 1000px;
+      min-height: 540px;
+      background: #f6f0e4;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0)),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0.02),
+          rgba(0,0,0,0.02) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      border-radius: 6px 6px 4px 4px;
+      box-shadow:
+        0 18px 35px rgba(0,0,0,0.6),
+        0 0 0 2px rgba(45,35,22,0.5);
+      padding: 22px 26px 26px 26px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .folder::before {
+      content: "";
+      position: absolute;
+      top: -16px;
+      left: 40px;
+      width: 160px;
+      height: 22px;
+      background: #e0d2b7;
+      border-radius: 4px 4px 0 0;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.4);
+    }
+
+    .folder-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      padding-bottom: 6px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .folder-title-main {
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .folder-title-sub {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .folder-header-right {
+      text-align: right;
+      font-size: 0.8rem;
+      min-width: 340px;
+    }
+
+    .stamp-secret {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      padding: 6px 18px;
+      border: 2px solid rgba(151, 34, 34, 0.9);
+      color: rgba(151, 34, 34, 0.95);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      transform: rotate(-12deg);
+      opacity: 0.8;
+      background: transparent;
+      mix-blend-mode: multiply;
+    }
+
+    .stamp-round {
+      position: absolute;
+      left: 40px;
+      bottom: 40px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 2px solid rgba(63,59,50,0.7);
+      color: rgba(63,59,50,0.85);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-5deg);
+      opacity: 0.6;
+      mix-blend-mode: multiply;
+    }
+
+    .stamp-round span {
+      text-align: center;
+      padding: 0 6px;
+    }
+
+    .folder-inner {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 18px;
+      margin-top: 8px;
+    }
+
+    .spine {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 38px;
+      background: linear-gradient(90deg, #d8c8a7, #e5d5b6 40%, #f6f0e4 100%);
+      box-shadow:
+        inset -2px 0 5px rgba(0,0,0,0.25),
+        4px 0 5px rgba(0,0,0,0.25);
+      z-index: -1;
+    }
+
+    .tabs {
+      position: relative;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .tab-label {
+      position: relative;
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px 12px 8px 18px;
+      background: #e7d6b8;
+      border-radius: 4px 0 0 4px;
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.15),
+        2px 2px 3px rgba(0,0,0,0.25);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border: none;
+      text-align: left;
+      color: #3c2e1e;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .tab-label::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: rgba(0,0,0,0.25);
+      border-radius: 2px;
+    }
+
+    .tab-label:hover {
+      background: #f1dfbc;
+      transform: translateX(2px);
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.18),
+        3px 3px 4px rgba(0,0,0,0.25);
+    }
+
+    .tab-label.active {
+      background: #f8ecd1;
+      transform: translateX(4px);
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.25),
+        4px 4px 5px rgba(0,0,0,0.35);
+      font-weight: 600;
+    }
+
+    .sections {
+      position: relative;
+      padding: 8px 12px 12px 18px;
+      border-left: 2px solid rgba(0,0,0,0.12);
+      height: 420px;
+      overflow: hidden;
+    }
+
+    .section-content {
+      display: none;
+      height: 100%;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .section-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+    }
+
+    .section-meta {
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .section-divider-line {
+      height: 1px;
+      background: linear-gradient(to right, rgba(0,0,0,0.2), transparent);
+      margin-bottom: 8px;
+    }
+
+    .typewriter {
+      white-space: pre-line;
+      font-family: "Special Elite", "Courier New", monospace;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      height: calc(100% - 70px);
+      overflow: hidden;
+    }
+
+    .field-line {
+      display: inline-block;
+      min-width: 130px;
+      border-bottom: 1px dotted rgba(0,0,0,0.5);
+      margin: 0 4px;
+    }
+
+    .barcode {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0.85;
+    }
+
+    .barcode-pattern {
+      height: 22px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .barcode-pattern span {
+      display: block;
+      width: 2px;
+      background: rgba(0,0,0,0.7);
+      transform: scaleY(0.5 + (var(--h) * 0.5));
+    }
+
+    .barcode-text {
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .page-corner {
+      position: absolute;
+      bottom: 0;
+      width: 60px;
+      height: 60px;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      outline: none;
+      display: none;
+    }
+
+    .page-corner.next {
+      right: 0;
+    }
+
+    .page-corner.next::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(
+          135deg,
+          transparent 0,
+          transparent 49%,
+          rgba(223,210,180,0.98) 50%,
+          #e0d2b7 100%
+        );
+      box-shadow: -2px -2px 3px rgba(0,0,0,0.35);
+    }
+
+    .page-corner.next::after {
+      content: "ДАЛЕЕ";
+      position: absolute;
+      right: 6px;
+      bottom: 10px;
+      font-family: "Special Elite", "Courier New", monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.16em;
+      transform: rotate(-45deg);
+      color: rgba(90,70,50,0.9);
+    }
+
+    .page-corner.prev {
+      left: 0;
+    }
+
+    .page-corner.prev::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(
+          225deg,
+          transparent 0,
+          transparent 49%,
+          rgba(223,210,180,0.98) 50%,
+          #e0d2b7 100%
+        );
+      box-shadow: 2px -2px 3px rgba(0,0,0,0.35);
+    }
+
+    .page-corner.prev::after {
+      content: "НАЗАД";
+      position: absolute;
+      left: 6px;
+      bottom: 10px;
+      font-family: "Special Elite", "Courier New", monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.16em;
+      transform: rotate(45deg);
+      color: rgba(90,70,50,0.9);
+    }
+
+    .page-corner:hover::before {
+      filter: brightness(1.05);
+    }
+
+    .page-indicator {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: "Special Elite", "Courier New", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      color: rgba(60,45,30,0.9);
+      opacity: 0.85;
+      display: none;
+    }
+
+    /* Блок с подписью офицера */
+    .signature-block {
+      margin-top: 6px;
+      text-align: right;
+      padding-right: 40px;
+    }
+
+    .signature-label {
+      font-family: "Special Elite", "Courier New", monospace;
+      font-size: 0.8rem;
+      margin-bottom: 2px;
+    }
+
+    .signature-image {
+      height: 60px;
+      opacity: 0.9;
+      filter: grayscale(0.1);
+    }
+
+    /* Профиль + фото */
+    .anketa-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 22px;
+    }
+
+    .anketa-photo {
+      width: 220px;
+      min-width: 220px;
+      background: #ebe4d4;
+      border: 2px solid rgba(50,40,30,0.45);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.35),
+        inset 0 0 13px rgba(0,0,0,0.08);
+      padding: 6px;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .anketa-photo img {
+      width: 100%;
+      display: block;
+      filter: sepia(0.25) contrast(1.05);
+    }
+
+    .anketa-photo::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      width: 42px;
+      height: 42px;
+      background: url("paperclip.png") no-repeat center/contain;
+      opacity: 0.85;
+      transform: rotate(-7deg);
+    }
+
+    @media (max-width: 900px) {
+      .folder-inner {
+        grid-template-columns: 130px 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .folder {
+        padding: 18px 16px 22px 16px;
+        width: 100%;
+        max-width: 100%;
+      }
+      .folder-inner {
+        grid-template-columns: 1fr;
+      }
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tab-label {
+        border-radius: 4px;
+        width: auto;
+        padding-right: 18px;
+      }
+      .sections {
+        border-left: none;
+        border-top: 2px solid rgba(0,0,0,0.12);
+        margin-top: 8px;
+        padding-left: 4px;
+      }
+      .stamp-round {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Звуки -->
+  <audio id="soundType" src="typesound.mp3" preload="auto"></audio>
+  <audio id="soundPaper" src="papersound.mp3" preload="auto"></audio>
+  <audio id="soundButton" src="papersound.mp3" preload="auto"></audio>
+
+  <!-- Экран подтверждения -->
+  <div id="overlay-confirm">
+    <div id="overlay-box">
+      <div id="overlay-title">ДЕПАРТАМЕНТО МУНИТОРУМ</div>
+      <div id="overlay-text">
+ЛИЧНОЕ ДЕЛО:
+ЛЕЙТЕНАНТ 0012-7026 «КРАНС»
+
+Для загрузки и печати досье
+нажмите любую кнопку мыши или клавишу.
+      </div>
+      <div id="overlay-hint">[ НАЖМИТЕ ДЛЯ ПРОДОЛЖЕНИЯ ]</div>
+    </div>
+  </div>
+
+  <div class="spine"></div>
+
+  <div class="folder">
+    <div class="folder-header">
+      <div>
+        <div class="folder-title-main">ИМПЕРИУМ ЧЕЛОВЕЧЕСТВА</div>
+        <div class="folder-title-sub">ДЕПАРТАМЕНТО МУНИТОРУМ · ЛИЧНОЕ ДЕЛО ВОЕННОСЛУЖАЩЕГО</div>
+      </div>
+      <div class="folder-header-right">
+        <div>7-й Корпус Смерти Крига</div>
+        <div>Имя: 0012-7026 «Кранс»</div>
+        <div>№ Досье: KR-7-7026-</div>
+      </div>
+    </div>
+
+    <div class="stamp-secret">СЕКРЕТНО</div>
+    <div class="stamp-round">
+      <span>DEPARTAMENTO MUNITORUM · SEGMENTUM OBSCURUS · VALIDATED</span>
+    </div>
+
+    <div class="folder-inner">
+      <aside class="tabs">
+        <button class="tab-label active" data-section="anketa">Профиль</button>
+        <button class="tab-label" data-section="service">Учетно-послужная карта</button>
+        <button class="tab-label" data-section="medical">Медицинская карта</button>
+        <button class="tab-label" data-section="bio">Биография</button>
+      </aside>
+
+      <section class="sections">
+        <!-- Профиль -->
+        <div class="section-content active" id="section-anketa">
+          <div class="section-header">
+            <div class="section-title">Профиль</div>
+            <div class="section-meta">Форма 17-А · Первичное заполнение</div>
+          </div>
+          <div class="section-divider-line"></div>
+
+          <div class="anketa-flex">
+            <div class="typewriter">
+Номер/имя: 0012-7026 «Кранс»<span class="field-line"></span>
+Звание: Лейтенант<span class="field-line"></span>
+Должность: Офицер | Старший гренадер | Командир 65-й бригады гренадёров<span class="field-line"></span>
+Возраст: 24 года<span class="field-line"></span>
+Место рождения: Мир-Смерти Криг<span class="field-line"></span>
+<span class="field-line" style="min-width:300px;"></span>
+
+Текущий статус: АКТИВЕН
+<span class="field-line" style="min-width:260px;"></span>
+            </div>
+
+            <div class="anketa-photo">
+              <img src="7026-photo.png" alt="Фотография лейтенанта 7026 «Кранс»">
+            </div>
+          </div>
+
+          <div class="signature-block">
+            <div class="signature-label">Подпись офицера, утвердившего личное дело:</div>
+            <img src="signature.png" alt="Подпись офицера" class="signature-image">
+            <div class="signature-label">Дата утверждения: 19.11.103.М42</div>
+          </div>
+
+          <div class="barcode">
+            <div class="barcode-pattern">
+              <span style="--h:0.2"></span>
+              <span style="--h:0.8"></span>
+              <span style="--h:0.4"></span>
+              <span style="--h:0.9"></span>
+              <span style="--h:0.5"></span>
+              <span style="--h:0.7"></span>
+              <span style="--h:0.3"></span>
+              <span style="--h:0.6"></span>
+              <span style="--h:0.9"></span>
+              <span style="--h:0.4"></span>
+            </div>
+            <div class="barcode-text">7TH-LTE-7026</div>
+          </div>
+        </div>
+
+        <!-- Учетно-послужная карта -->
+        <div class="section-content" id="section-service" data-pagesize="700">
+          <div class="section-header">
+            <div class="section-title">Учетно-послужная карта</div>
+            <div class="section-meta">Форма 42-Б · Служебный путь</div>
+          </div>
+          <div class="section-divider-line"></div>
+
+          <div class="typewriter">
+Возраст зачисления в новобранцы: 13 лет<span class="field-line"></span>
+Возраст зачисления в шутце: 14 лет<span class="field-line"></span>
+Место призыва: Гарнизонный призывной пункт №115, Подземный Улей A-12, Мир-Смерти Криг<span class="field-line" style="min-width:220px;"></span>
+
+Награды и поощрения:
+ — Медали: Печать Чистоты, "Простой Орёл", Медаль за освобождение Хайленда,
+   Серебряный Череп, Алый Медальон, Медаль "Окопного Штурмовика",
+   "Крест Выдающейся Службы"<span class="field-line" style="min-width:120px;"></span>
+
+Взыскания и дисциплинарные меры:
+ — ОТСУТСТВУЮТ
+
+Служебные записи (Хронология службы 7026 «Кранс»):
+
+[1] Дата: 03.01.098.М42
+    Должность / роль: Рекрут, рабочая бригада подземных катакомб Крига
+    Назначен в рабочие тех-бригады по расширению подземных тоннелей.
+    Проявил способности к сварке, укреплению конструкций и работе с взрывчаткой.
+
+[2] Дата: 11.04.100.М42
+    Должность / роль: Шутце, 7-й Осадный Полк Крига
+    Прибыл на корабль «Клинок Вентана» в составе пополнения.
+    Прошёл усиленную подготовку по миномётным расчётам.
+
+[3] Дата: 22.07.100.М42
+    Должность / роль: Обер-Шутце, Наводчик миномётного расчёта
+    Участие в кампании против Империи Тау. Отличился точностью корректировки огня.
+    Переквалифицирован в связисты, получил вокс-станцию.
+
+[4] Дата: 09.02.101.М42
+    Должность / роль: Ефрейтор, Связист 7-го Полка
+    Участие в Харионской кампании против четырёх варп-банд.
+    Получил огнемёт как основное оружие. Пережил катастрофическое поражение сил Империума.
+
+[5] Дата: 10.02.101.М42
+    Должность / роль: Ефрейтор, Связист
+    Свидетель гибели Квартирмейстера 8911, добровольно оставшегося снабжать бойцов до последнего.
+    Этот эпизод стал ключевым в становлении 7026.
+
+[6] Дата: 18.06.101.М42
+    Должность / роль: Ефрейтор, Личная охрана Герр Оберста Лавра Мазанова
+    Добровольно вызвался в новый состав после потерь. Назначен в охрану командира.
+    Отправлен на Малакбель.
+
+[7] Дата: 01.09.101.М42
+    Должность / роль: Ефрейтор, Особый Контингент
+    После исчезновения связи с Малакбелем уцелела лишь сотня криговцев.
+    Взяты под надзор Оффицио Префектус.
+    Начали службу как надзорный отряд над остальной гвардией
+    под командованием Капитана-комиссара Игнатия Грозного.
+
+[8] Дата: 14.03.102.М42
+    Должность / роль: Фельдфебель, Надзорный отряд
+    Во время кампании против орков спас отряд, подняв строительным краном
+    тяжёлый орочий танк, дав возможность уничтожить его.
+    Получил прозвище «Крансфюнхер».
+
+[9] Дата: 20.03.102.М42
+    Должность / роль: Фельдфебель, Надзорный отряд
+    Гауптман 1917 Апис Вернер Крот закрепил прозвище в документах
+    в укороченном варианте — «Кранс».
+
+[10] Дата: 07.09.103.М42
+     Должность / роль: Унтер-Офицер, Командир сварочной бригады
+     Возглавил сварочные подразделения на планете Кефаль.
+     По итогам кампании утверждён в офицерской должности.
+
+[11] Дата: 02.10.103.М42
+     Должность / роль: Лейтенант 7-го Корпуса Смерти Крига
+     После прибытия сил Похода на Иллидриан Лейтенант 7026 «Кранс»
+     был рекомендован Гауптманом 1389 Регелем Туркулом к расширенным обязанностям
+     и включён в офицерский состав
+     благодаря опыту кампаний на Харионе, Даготе-1 и иных нестандартных операциях.
+
+[12] Дата: 08.10.103.М42
+     Должность / роль: Лейтенант
+     Участвовал в подземных операциях по зачистке биоформ,
+     угрожавших целостности почвенных слоёв.
+
+[13] Дата: 10.10.103.М42
+     Должность / роль: Лейтенант
+     Участвовал в боевых действиях против ксеносов, обнаруженных в недрах Иллидриана.
+
+[14] Дата: 20.10.103.М42
+     Должность / роль: Лейтенант
+     Участвовал в подавлении бунтов Харонского полка против сил Оффицио Префектус,
+     обеспечивал поддержку и оказание первой медицинской помощи раненым.
+
+[15] Дата: 25.10.103.М42
+     Должность / роль: Лейтенант
+     Принял командование в операции на Гераль-Примус,
+     возглавив ударные силы 7-го Осадного Корпуса по приказу Гауптмана 1389 Регеля Туркула.
+
+[16] Дата: 27.10.103.М42
+     Должность / роль: Лейтенант, Командующий корпусом (временно)
+     Организовал оборону и управление составом 7-го Корпуса
+     во время кампании на Гераль-Примусе.
+     На период операции официально назначен командующим силами
+     7-го Корпуса Смерти Крига.
+
+[17] Дата: 03.11.103.М42
+     Должность / роль: Лейтенант, Исполняющий обязанности командира корпуса
+     Возглавил марш-бросок к ПКО.
+
+[18] Дата: 05.11.103.М42
+     Должность / роль: Лейтенант
+     Участвовал в организации обороны ПКО и размещении сил.
+     Провёл прощальные ритуалы Гауптману 1389 Регелю Туркулу
+     вместе с Обер-Лейтенантом 1388 Штайнерром и Старшим Квартирмейстером.
+
+[19] Дата: 10.11.103.М42
+     Должность / роль: Лейтенант
+     После эвакуации с Гераль-Примус Лейтенант 7026 «Кранс»
+     был отмечен наградами штаба Крига, включая Серебряный Череп.
+     Звание и идентификатор подтверждены как действующие.
+          </div>
+
+          <div class="barcode">
+            <div class="barcode-pattern">
+              <span style="--h:0.9"></span>
+              <span style="--h:0.4"></span>
+              <span style="--h:0.7"></span>
+              <span style="--h:0.2"></span>
+              <span style="--h:0.8"></span>
+              <span style="--h:0.5"></span>
+              <span style="--h:0.3"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Медицинская карта -->
+        <div class="section-content" id="section-medical" data-pagesize="600">
+          <div class="section-header">
+            <div class="section-title">Медицинская карта</div>
+            <div class="section-meta">Форма М-9 · Хирургениум</div>
+          </div>
+          <div class="section-divider-line"></div>
+
+          <div class="typewriter">
+Общий статус годности: <span class="field-line" style="min-width:200px;"></span>
+
+Рост: 175 см<span class="field-line"></span>   Вес: 80 кг<span class="field-line"></span>
+Слух: Категория "А"<span class="field-line" style="min-width:120px;"></span>   Зрение: Категория "А"<span class="field-line" style="min-width:120px;"></span>
+
+Перенесённые ранения и повреждения:
+ — Множественные пулевые ранения и шрамы. Аугментация левой руки.
+    Обстоятельства: Проведение боевых операций.
+    Лечение: Самостоятельное лечение, Штаб Квартирмейстеров
+    7-го Осадного Корпуса Смерти Крига.
+
+Импланты и протезы:
+ — Аугментация левой руки
+ — Вставные зубы
+    Обстоятельства: Ранение на Кефали со стороны оркоидов.
+    Лечение: Аугмент установил Магос Биологис Опиум Х.
+
+Психическое состояние:
+ — Шаткое. Предположительно, из-за множественных ранений головы
+   может вести себя нестабильно.
+
+Осмотр провёл(а): Старший Квартирмейстер, Обер-Фельдфебель 8911 Кагори<span class="field-line" style="min-width:180px;"></span>
+Дата осмотра: 16.11.103.М42<span class="field-line" style="min-width:120px;"></span>
+          </div>
+
+          <div class="barcode">
+            <div class="barcode-pattern">
+              <span style="--h:0.6"></span>
+              <span style="--h:0.3"></span>
+              <span style="--h:0.8"></span>
+              <span style="--h:0.4"></span>
+              <span style="--h:0.9"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Биография -->
+        <div class="section-content" id="section-bio" data-pagesize="650">
+          <div class="section-header">
+            <div class="section-title">Биография</div>
+            <div class="section-meta">Краткое изложение</div>
+          </div>
+          <div class="section-divider-line"></div>
+
+          <div class="typewriter">
+КРАТКАЯ БИОГРАФИЯ 7026 «КРАНС»:
+
+7026 родился в стандартных условиях подулья Крига и с ранних лет
+проявил способности к работе с техникой и взрывчаткой,
+за что был определён в рабочие бригады по расширению подземных катакомб.
+
+Попав в 7-й Осадный Полк, прошёл путь от миномётного наводчика до связиста,
+отличившись дисциплиной и точностью.
+
+Первое крупное боевое испытание он пережил в кампании против Тау,
+а затем участвовал в Харионских боях против варп-банд,
+где лишился товарища и наставника — Квартирмейстера 8911,
+чья смерть глубоко на него повлияла.
+
+Позже 7026 был зачислен в личную охрану Герр Оберста Лавра Мазанова,
+а основной состав в числе двухсот тысяч был отправлен на Малакбель —
+мир, с которого никто не вернулся.
+После исчезновения корпуса и гибели большей части сил
+уцелевшая сотня криговцев, включая 7026, была взята под надзор
+Оффицио Префектус и использована как вспомогательные силы
+внутреннего контроля над гвардией.
+
+Сочетание раннего опыта работы в катакомбах, службы в миномётных расчётах,
+связи и надзорных подразделениях сформировало из 7026 офицера,
+привыкшего держать строй в условиях постоянной потери личного состава.
+Его склонность к импровизации при обращении с техникой и взрывчаткой
+сочетается с фанатичной преданностью дисциплине Крига,
+что и привело к дальнейшему повышению до командования 65-й бригадой гренадёров.
+          </div>
+
+          <div class="barcode">
+            <div class="barcode-pattern">
+              <span style="--h:0.5"></span>
+              <span style="--h:0.7"></span>
+              <span style="--h:0.2"></span>
+              <span style="--h:0.9"></span>
+              <span style="--h:0.4"></span>
+              <span style="--h:0.6"></span>
+            </div>
+          </div>
+        </div>
+
+        <button class="page-corner prev" id="pagePrev" aria-label="Предыдущая страница"></button>
+        <button class="page-corner next" id="pageNext" aria-label="Следующая страница"></button>
+        <div class="page-indicator" id="pageIndicator"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const soundType = document.getElementById("soundType");
+    const soundPaper = document.getElementById("soundPaper");
+    const soundButton = document.getElementById("soundButton");
+
+    let soundEnabled = false;
+
+    function playSound(audio, volume = 0.12) {
+      if (!soundEnabled) return;
+      const clone = audio.cloneNode();
+      clone.volume = volume;
+      clone.play().catch(() => {});
+    }
+
+    const tabs = document.querySelectorAll(".tab-label");
+    const sections = document.querySelectorAll(".section-content");
+    const pagePrev = document.getElementById("pagePrev");
+    const pageNext = document.getElementById("pageNext");
+    const pageIndicator = document.getElementById("pageIndicator");
+
+    const typeSpeed = 10;
+    const typeJitter = 25;
+    const defaultPageSize = 700;
+
+    let currentSection = null;
+    let typingTimer = null;
+    let currentPageText = "";
+    let currentCharIndex = 0;
+
+    const pagesBySection = new WeakMap();
+    const seenPages = new WeakMap();
+    const progressPages = new WeakMap();
+
+    function getSeenSet(section) {
+      let set = seenPages.get(section);
+      if (!set) {
+        set = new Set();
+        seenPages.set(section, set);
+      }
+      return set;
+    }
+
+    function markPageSeen(section, pageIndex) {
+      const set = getSeenSet(section);
+      set.add(pageIndex);
+
+      let m = progressPages.get(section);
+      if (!m) {
+        m = new Map();
+        progressPages.set(section, m);
+      }
+      m.set(pageIndex, currentPageText.length);
+    }
+
+    function isPageSeen(section, pageIndex) {
+      const set = seenPages.get(section);
+      return set ? set.has(pageIndex) : false;
+    }
+
+    function getProgressMap(section) {
+      let m = progressPages.get(section);
+      if (!m) {
+        m = new Map();
+        progressPages.set(section, m);
+      }
+      return m;
+    }
+
+    function buildPagesForSection(section) {
+      const tw = section.querySelector(".typewriter");
+      if (!tw) return;
+
+      const full = (tw.dataset.fulltext || tw.textContent || "").replace(/\s+$/,"");
+      tw.dataset.fulltext = full;
+
+      const localPageSize = parseInt(section.dataset.pagesize || defaultPageSize, 10);
+
+      const rawBlocks = full.split(/\n\s*\n/);
+      const blocks = rawBlocks.map(b => b.trimEnd());
+
+      const pages = [];
+      let current = "";
+
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        if (block === "") continue;
+
+        if (current === "") {
+          if (block.length > localPageSize * 1.5) {
+            let start = 0;
+            while (start < block.length) {
+              pages.push(block.slice(start, start + localPageSize));
+              start += localPageSize;
+            }
+            current = "";
+          } else {
+            current = block;
+          }
+        } else {
+          const candidate = current + "\n\n" + block;
+          if (candidate.length > localPageSize) {
+            pages.push(current);
+            if (block.length > localPageSize * 1.5) {
+              let start = 0;
+              while (start < block.length) {
+                pages.push(block.slice(start, start + localPageSize));
+                start += localPageSize;
+              }
+              current = "";
+            } else {
+              current = block;
+            }
+          } else {
+            current = candidate;
+          }
+        }
+      }
+
+      if (current !== "") {
+        pages.push(current);
+      }
+
+      if (pages.length === 0) {
+        pages.push("");
+      }
+
+      pagesBySection.set(section, pages);
+      section.dataset.totalPages = String(pages.length);
+      if (!section.dataset.pageIndex) {
+        section.dataset.pageIndex = "0";
+      }
+    }
+
+    function getPages(section) {
+      let pages = pagesBySection.get(section);
+      if (!pages) {
+        buildPagesForSection(section);
+        pages = pagesBySection.get(section) || [""];
+      }
+      return pages;
+    }
+
+    function saveCurrentProgress() {
+      if (!currentSection) return;
+      const section = currentSection;
+      const tw = section.querySelector(".typewriter");
+      if (!tw) return;
+
+      const pageIndex = parseInt(section.dataset.pageIndex || "0", 10);
+      const visibleLen = tw.textContent.length;
+      if (visibleLen <= 0) return;
+
+      const m = getProgressMap(section);
+      const prev = m.get(pageIndex) || 0;
+      if (visibleLen > prev) {
+        m.set(pageIndex, visibleLen);
+      }
+    }
+
+    function startTypewriter(section, pageText, onComplete, startIndex = 0, presetText = "") {
+      const tw = section.querySelector(".typewriter");
+      if (!tw) return;
+
+      if (typingTimer !== null) {
+        clearTimeout(typingTimer);
+        typingTimer = null;
+      }
+
+      currentSection = section;
+      currentPageText = pageText;
+      currentCharIndex = startIndex;
+      tw.textContent = presetText;
+
+      function step() {
+        if (currentSection !== section) return;
+
+        if (currentCharIndex > currentPageText.length) {
+          typingTimer = null;
+          if (typeof onComplete === "function") onComplete();
+          return;
+        }
+
+        tw.textContent = currentPageText.slice(0, currentCharIndex);
+        currentCharIndex++;
+
+        const ch = currentPageText[currentCharIndex - 1];
+        if (ch && ch !== ' ' && ch !== '\n' && currentCharIndex % 3 === 0) {
+          playSound(soundType, 0.05);
+        }
+
+        const delay = typeSpeed + Math.random() * typeJitter;
+        typingTimer = setTimeout(step, delay);
+      }
+
+      step();
+    }
+
+    function updateNavButtons(totalPages, pageIndex, typing) {
+      if (totalPages <= 1) {
+        pageIndicator.style.display = "none";
+        pagePrev.style.display = "none";
+        pageNext.style.display = "none";
+        return;
+      }
+
+      pageIndicator.style.display = "block";
+      pageIndicator.textContent = `Стр. ${pageIndex + 1} / ${totalPages}`;
+
+      pagePrev.style.display = pageIndex === 0 ? "none" : "block";
+
+      if (pageIndex === totalPages - 1) {
+        pageNext.style.display = "none";
+      } else {
+        pageNext.style.display = typing ? "none" : "block";
+      }
+    }
+
+    function updatePageUI(section) {
+      const pages = getPages(section);
+      const tw = section.querySelector(".typewriter");
+      if (!tw) return;
+
+      let pageIndex = parseInt(section.dataset.pageIndex || "0", 10);
+      let totalPages = pages.length;
+
+      if (pageIndex < 0) pageIndex = 0;
+      if (pageIndex > totalPages - 1) pageIndex = totalPages - 1;
+      section.dataset.pageIndex = String(pageIndex);
+      section.dataset.totalPages = String(totalPages);
+
+      const pageText = pages[pageIndex];
+
+      const pageSeen = isPageSeen(section, pageIndex);
+      const progMap = getProgressMap(section);
+      let progress = progMap.get(pageIndex) || 0;
+      if (progress > pageText.length) progress = pageText.length;
+
+      if (pageSeen) {
+        if (typingTimer !== null) {
+          clearTimeout(typingTimer);
+          typingTimer = null;
+        }
+        currentSection = section;
+        currentPageText = pageText;
+        currentCharIndex = pageText.length;
+        tw.textContent = pageText;
+
+        updateNavButtons(totalPages, pageIndex, false);
+        return;
+      }
+
+      if (progress > 0 && progress < pageText.length) {
+        updateNavButtons(totalPages, pageIndex, true);
+
+        const presetText = pageText.slice(0, progress);
+        startTypewriter(
+          section,
+          pageText,
+          () => {
+            markPageSeen(section, pageIndex);
+            updateNavButtons(totalPages, pageIndex, false);
+          },
+          progress,
+          presetText
+        );
+      } else if (progress >= pageText.length && pageText.length > 0) {
+        markPageSeen(section, pageIndex);
+        tw.textContent = pageText;
+        updateNavButtons(totalPages, pageIndex, false);
+      } else {
+        updateNavButtons(totalPages, pageIndex, true);
+
+        startTypewriter(
+          section,
+          pageText,
+          () => {
+            markPageSeen(section, pageIndex);
+            updateNavButtons(totalPages, pageIndex, false);
+          },
+          0,
+          ""
+        );
+      }
+    }
+
+    function activateSectionById(shortId) {
+      const targetId = "section-" + shortId;
+      const sec = document.getElementById(targetId);
+      if (!sec) return;
+
+      saveCurrentProgress();
+
+      sections.forEach(s => {
+        if (s === sec) {
+          s.classList.add("active");
+          updatePageUI(s);
+        } else {
+          s.classList.remove("active");
+        }
+      });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        playSound(soundButton, 0.15);
+        const targetId = tab.dataset.section;
+
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        activateSectionById(targetId);
+      });
+    });
+
+    pagePrev.addEventListener("click", () => {
+      playSound(soundPaper, 0.18);
+      const activeSection = document.querySelector(".section-content.active");
+      if (!activeSection) return;
+
+      saveCurrentProgress();
+
+      let pageIndex = parseInt(activeSection.dataset.pageIndex || "0", 10);
+      pageIndex = Math.max(0, pageIndex - 1);
+      activeSection.dataset.pageIndex = String(pageIndex);
+
+      updatePageUI(activeSection);
+    });
+
+    pageNext.addEventListener("click", () => {
+      playSound(soundPaper, 0.18);
+      const activeSection = document.querySelector(".section-content.active");
+      if (!activeSection) return;
+
+      saveCurrentProgress();
+
+      const pages = getPages(activeSection);
+      let pageIndex = parseInt(activeSection.dataset.pageIndex || "0", 10);
+      const totalPages = pages.length;
+
+      pageIndex = Math.min(totalPages - 1, pageIndex + 1);
+      activeSection.dataset.pageIndex = String(pageIndex);
+
+      updatePageUI(activeSection);
+    });
+
+    // Собираем страницы сразу, но НЕ запускаем печать до подтверждения
+    sections.forEach(sec => {
+      buildPagesForSection(sec);
+    });
+
+    // Обработчик подтверждения
+    const overlay = document.getElementById("overlay-confirm");
+    function startDossier() {
+      if (overlay.style.display === "none") return;
+      overlay.style.display = "none";
+      soundEnabled = true;
+      const firstActive = document.querySelector(".section-content.active");
+      if (firstActive) {
+        updatePageUI(firstActive);
+      }
+    }
+
+    overlay.addEventListener("click", startDossier, { once: true });
+    window.addEventListener("keydown", startDossier, { once: true });
+  </script>
+</body>
+</html>
